@@ -1,0 +1,22 @@
+reportParameters = {
+    "reportUrl": "",
+    "pageName": "",
+    "bookmarkList": [
+        "man",
+        "ish"
+    ],
+    "sessionRestart": 100,
+    "filters": [
+        {
+            "filterTable": "nqck",
+            "filterColumn": "asmcnq",
+            "isSlicer": false,
+            "filtersList": [
+                "mani",
+                "sh",
+                "kumar"
+            ]
+        }
+    ],
+    "thinkTimeSeconds": 100
+}

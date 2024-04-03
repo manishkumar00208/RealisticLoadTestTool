@@ -1,18 +1,20 @@
 from selenium import webdriver
-from getpass import getpass
+#from getpass import getpass
 import customtkinter as ctk
-import tkinter.messagebox as tkmb 
+import tkinter.messagebox as tkmb
+import tkinter as tk
+#from tkinter import messagebox
 import time  
 import subprocess
-import sys
-import re
+#import sys
+#import re
 import json
 
 
 a = None
 b = None
 c = None
-
+d = None
 # Selecting GUI theme - dark, light , system (for system default) 
 ctk.set_appearance_mode("light") 
   
@@ -49,15 +51,16 @@ def next_script(a,b,c):
 
 
 
-    def run(val2):
+    def run(d):
+        instance_num = int(d)
         process2 = subprocess.Popen(['powershell.exe', '-File',
                                     'C:\\Users\\09428516\\Documents\\website_login\\PowerBI-Tools-For-Capacities-master\\RealisticLoadTestTool\\Run_Load_Test_Only.ps1'],
                                    stdin=subprocess.PIPE,
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE,
                                    universal_newlines=True)
-        process2.stdin.write(f"{val2}\n")
-        process.stdin.close()
+        process2.stdin.write(f"{instance_num}\n")
+        process2.stdin.close()
         # Capture the output of the PowerShell script
         output, error = process2.communicate()
 
@@ -72,9 +75,13 @@ def next_script(a,b,c):
     frame.pack(padx=10, pady=10)
     input_box3 = ctk.CTkEntry(master=frame, width=20, placeholder_text="Enter list item")
     input_box3.pack(pady=12,padx=10)
-    nxt_text=input_box3.get()
-    nxt_input = int(nxt_text)
-    button3 = ctk.CTkButton(master=frame,text='Run',command= lambda: run(nxt_input) )
+    #global d
+    def get3():
+        d = input_box3.get()
+        run(d)
+    #print(d)
+    #nxt_input = int(nxt_text)
+    button3 = ctk.CTkButton(master=frame,text='Run',command=get3)
     button3.pack(pady=12,padx=10)
 
 def next_win(val):
@@ -144,9 +151,121 @@ def next_win(val):
     #c = str(ws_text2).encode() + b"\n"
     #process.communicate(input=ws_input2)
     def getin2():
-        global c
-        c=input_box2.get()
-        next_script(a,b,c)
+        def write_json():
+            # Get user inputs
+            # report_url = report_url_entry.get()
+            page_name = page_name_entry.get()
+            bookmark_list = bookmark_list_entry.get().split(',')
+            session_restart = int(session_restart_entry.get())
+            think_time_seconds = int(think_time_seconds_entry.get())
+
+            # Get filters inputs
+            filters = []
+            for i in range(len(filter_entries)):
+                filter_table = filter_entries[i]['table_entry'].get()
+                filter_column = filter_entries[i]['column_entry'].get()
+                is_slicer = filter_entries[i]['is_slicer_var'].get()
+                filters_list = filter_entries[i]['list_entry'].get().split(',')
+                filters.append({
+                    "filterTable": filter_table,
+                    "filterColumn": filter_column,
+                    "isSlicer": is_slicer,
+                    "filtersList": filters_list
+                })
+
+            # Create reportParameters dictionary
+            report_parameters = {
+                "reportUrl": "",
+                "pageName": page_name,
+                "bookmarkList": bookmark_list,
+                "sessionRestart": session_restart,
+                "filters": filters,
+                "thinkTimeSeconds": think_time_seconds
+            }
+
+            # Write to JSON file with variable assignment
+            with open('PBIReport.json', 'w') as json_file:
+                json_file.write("reportParameters = ")
+                json.dump(report_parameters, json_file, indent=4)
+
+            global c
+            c = input_box2.get()
+            next_script(a, b, c)
+
+            #messagebox.showinfo("Success", "JSON file created successfully!")
+
+        #def json_manip():
+            # Create Tkinter window
+        window = tk.Tk()
+        window.title("Create JSON File")
+        window.geometry("400x500")
+
+        # Add input fields for keys in the JSON file
+        # report_url_label = tk.Label(window, text="Report URL:")
+        # report_url_label.pack()
+        # report_url_entry = tk.Entry(window)
+        # report_url_entry.pack()
+
+        page_name_label = tk.Label(window, text="Page Name:")
+        page_name_label.pack()
+        page_name_entry = tk.Entry(window)
+        page_name_entry.pack()
+
+        bookmark_list_label = tk.Label(window, text="Bookmark List (comma-separated):")
+        bookmark_list_label.pack()
+        bookmark_list_entry = tk.Entry(window)
+        bookmark_list_entry.pack()
+
+        session_restart_label = tk.Label(window, text="Session Restart:")
+        session_restart_label.pack()
+        session_restart_entry = tk.Entry(window)
+        session_restart_entry.pack()
+
+        think_time_seconds_label = tk.Label(window, text="Think Time (seconds):")
+        think_time_seconds_label.pack()
+        think_time_seconds_entry = tk.Entry(window)
+        think_time_seconds_entry.pack()
+
+        # Add input fields for 'filters'
+        filter_frame = tk.Frame(window)
+        filter_frame.pack(pady=10, padx=10)
+
+        filter_entries = []
+
+        # Add a button to add new filter entry
+        def add_filter_entry():
+            filter_entry = {}
+
+            table_label = tk.Label(filter_frame, text="Filter Table:")
+            table_label.grid(row=len(filter_entries), column=0)
+            filter_entry['table_entry'] = tk.Entry(filter_frame)
+            filter_entry['table_entry'].grid(row=len(filter_entries), column=1)
+
+            column_label = tk.Label(filter_frame, text="Filter Column:")
+            column_label.grid(row=len(filter_entries), column=2)
+            filter_entry['column_entry'] = tk.Entry(filter_frame)
+            filter_entry['column_entry'].grid(row=len(filter_entries), column=3)
+
+            is_slicer_label = tk.Label(filter_frame, text="Is Slicer:")
+            is_slicer_label.grid(row=len(filter_entries), column=4)
+            filter_entry['is_slicer_var'] = tk.BooleanVar()
+            filter_entry['is_slicer_checkbox'] = tk.Checkbutton(filter_frame, variable=filter_entry['is_slicer_var'])
+            filter_entry['is_slicer_checkbox'].grid(row=len(filter_entries), column=5)
+
+            list_label = tk.Label(filter_frame, text="Filters List (comma-separated):")
+            list_label.grid(row=len(filter_entries), column=6)
+            filter_entry['list_entry'] = tk.Entry(filter_frame)
+            filter_entry['list_entry'].grid(row=len(filter_entries), column=7)
+
+            filter_entries.append(filter_entry)
+
+        add_filter_entry_button = tk.Button(window, text="Add Filter", command=add_filter_entry)
+        add_filter_entry_button.pack()
+
+        # Button to create the JSON file
+        create_button = tk.Button(window, text="Create JSON File", command=write_json)
+        create_button.pack()
+
 
     button2 = ctk.CTkButton(master=frame,text='Next',command= getin2)
     button2.pack(pady=12,padx=10)
